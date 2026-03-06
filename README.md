@@ -60,22 +60,37 @@ search_text_len = len(search_text) #--> len object of the substring
 sid = [] #--> creating an empty list
 
 # opening pdf with pdfplumber and searching for text using a for loop
-with pdfp.open(r"C:\Users\togarro\Documents\NJSLA_ISR_Split\pcspr25_NJ-034390-070_ISR_Spring_Grade_8_ELA.pdf") as pdf:
-    for pages in pdf.pages: #--> range to extract text from odd pages
+with pdfp.open(pdf_object) as pdf:
+    for i, pages in enumerate(tqdm(pdf.pages[::2],desc = 'Retrieving SIDs')): #--> extracting text from every other page and using tqdm to track progress
         text = pages.extract_text_simple() #--> creating string object
         start = text.find(search_text) #--> assigning the index of the search text to start variable
         end = start +  search_text_len + sid_len #--> assigning the index to stop extracting text to the end variable
-        sid.append(text[start:end]) #--> appening extracted text from the PDF to list
-
-# creating sid_df from list
-sid_df = pd.DataFrame({'State ID':sid})
-
-# removing blank values from the sid_df
-sid_df = sid_df[sid_df['State ID'] != '']
-
-# returning SID
-sid_df['State ID'] = sid_df['State ID'].str.split(':').str[1].str.strip()
-
-# casting as string
-sid_df['State ID'] = sid_df['State ID'].astype('string')
+        sid.append(text[start:end].split(':')[1].strip()) #--> appening and manipulating extracted text from PDF file
 ~~~
+
+3. [tqdm](https://pypi.org/project/tqdm/) - used to display a progrss tracker to guage progress of various parts of the ISR splitting process
+
+~~~ python
+from tqdm import tqdm
+
+ with pdfp.open(pdf_object) as pdf:
+        for i, pages in enumerate(tqdm(pdf.pages[::2],desc = 'Retrieving SIDs')): #--> extracting text from every other page and using tqdm to track progress
+            text = pages.extract_text_simple() #--> creating string object
+            start = text.find(search_text) #--> assigning the index of the search text to start variable
+            end = start +  search_text_len + sid_len #--> assigning the index to stop extracting text to the end variable
+            sid.append(text[start:end].split(':')[1].strip()) #--> appening and manipulating extracted text from PDF file
+~~~
+
+4. [pathlib](https://pypi.org/project/pathlib/) - used to access and perform actions on files wihin folders.
+
+~~~ python
+# creating folder_path variables
+folder_path = Path(r"C:\Users\togarro\NJSLA_ISR_Script_Exports\SY_24_NJSLA_MAT_ISR")
+
+# for loop leveraging iterdir() method to iterate over files in folder
+for file_path in folder_path.iterdir():
+    pdf_object = f"{file_path}"
+    reader = PdfReader(pdf_object)
+    writer = PdfWriter() #--> instantiating PDF Writer
+    doc_len = len(reader.pages)//2 #--> returning number of pages, divided by 2 to account for 2 page documents
+~~~ 
