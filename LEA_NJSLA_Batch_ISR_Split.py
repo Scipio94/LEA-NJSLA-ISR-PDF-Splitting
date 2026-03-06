@@ -45,13 +45,18 @@ for file_path in folder_path.iterdir():
     length_qa += doc_len
 
     
-    #qa
+     #qa
     if length_qa == len(sid):
-        for i, page_num in enumerate(tqdm(range(0,len(reader.pages),2), desc = 'Splitting NJSLA ISRs')): #--> creating a range of all even pages of the document
-            writer = PdfWriter() #--> resets the writer object in each iteration of the loop
-            page_name = df[df['State ID'].isin(sid)].reset_index(drop = True)['Local ID'].iloc[i]  #--> returns other id based on indexing of df based on 
-            writer.add_page(reader.pages[page_num]) #--> adding first page to PDF export
-            if page_num <= len(reader.pages): #--> conditional to ensure that that page num is not outside of index
-                writer.add_page(reader.pages[page_num +1]) #--> adding second page to PDF export
-            with open(f'/Users/togarro/NJSLA_ISR_Script_Exports/SY_24_MATH/{page_name}.pdf','wb') as f: #--> file writing
-                    writer.write(f)  
+        # error handling
+        try:
+            for i, page_num in enumerate(tqdm(range(0,len(reader.pages),2), desc = 'Splitting NJSLA ISRs')): #--> creating a range of all even pages of the document
+                writer = PdfWriter() #--> resets the writer object in each iteration of the loop
+                page_name = df[df['State ID'].isin(sid)].reset_index(drop = True)['Local ID'].iloc[i]  #--> returns other id based on indexing of df based on 
+                writer.add_page(reader.pages[page_num]) #--> adding first page to PDF export
+                if page_num <= len(reader.pages): #--> conditional to ensure that that page num is not outside of index
+                    writer.add_page(reader.pages[page_num +1]) #--> adding second page to PDF export
+                with open(f'/Users/togarro/NJSLA_ISR_Script_Exports/SY_24_MATH/{page_name}.pdf','wb') as f: #--> file writing
+                       writer.write(f)
+        # returning the missing SID when there is an error
+        except:
+            print(f'The State ID {sid[i]} is missing from the sid export!')
